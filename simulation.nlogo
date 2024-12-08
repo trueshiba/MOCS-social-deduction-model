@@ -145,11 +145,11 @@ to go
   let sus max (list first-vote second-vote third-vote)
   let suspicious sort-on [trust] turtles
   (ifelse first-vote = sus [
-    ask item 0 suspicious [set alive true die]
+    ask item 0 suspicious [die]
   ] second-vote = sus [
-    ask item 1 suspicious [set alive true die]
+    ask item 1 suspicious [die]
   ] [
-    ask item 2 suspicious [set alive true die]
+    ask item 2 suspicious [die]
   ])
   ]
 
