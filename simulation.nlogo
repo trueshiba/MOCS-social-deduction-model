@@ -3,6 +3,9 @@ globals [
   first-vote
   second-vote
   third-vote
+  num-killed
+  num-voted
+  
 ]
 
 breed [ imposters imposter ]
@@ -10,7 +13,6 @@ breed [ crewmates crewmate ]
 
 turtles-own [
   trust
-  alive
   trust-sphere
  ]
 
@@ -29,7 +31,6 @@ to setup
   create-crewmates initial-number-crewmates [
     set color random 225
     set trust 1
-    set alive true
     setxy random-xcor random-ycor
   ]
 
@@ -42,7 +43,6 @@ to setup
     set time-since-prev-kill 0;
     ; set cooldown ; could be cool to have
     set vent-cooldown init-vent-cooldown
-    set alive true
     setxy random-xcor random-ycor
   ]
 
@@ -146,14 +146,15 @@ to go
   let sus max (list first-vote second-vote third-vote)
   let suspicious sort-on [trust] turtles
   (ifelse first-vote = sus [
-    ask item 0 suspicious [set alive true die]
+    ask item 0 suspicious [die]
   ] second-vote = sus [
-    ask item 1 suspicious [set alive true die]
+    ask item 1 suspicious [die]
   ] [
-    ask item 2 suspicious [set alive true die]
+    ask item 2 suspicious [die]
   ])
   ]
 
+  set num-voted num-voted + 1
 
   update-trust-plot
   tick
@@ -214,7 +215,6 @@ to kill
 
      let closest-crewmate min-one-of crewmates [distance myself]
      ask closest-crewmate [
-       set alive false ;
        die
        user-message "Imposter Killed"
       ]
@@ -222,6 +222,7 @@ to kill
       set vent-cooldown init-vent-cooldown
       vent
       ]
+      set num-killed num-killed + 1
     ]
     set time-since-prev-kill (time-since-prev-kill + 1)
 
@@ -437,13 +438,13 @@ NIL
 HORIZONTAL
 
 PLOT
-453
-54
-653
-204
-trust
-time
-trust
+688
+128
+1110
+460
+Trust
+Time
+Trust
 0.0
 10.0
 0.0
@@ -452,6 +453,27 @@ true
 true
 "" ""
 PENS
+"default" 1.0 0 -16777216 true "" "plot mean [trust] of turtles"
+
+PLOT
+324
+372
+654
+699
+Number of Players over time
+# Players
+Time
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Alive Players" 1.0 0 -13840069 true "" "plot count turtles"
+"Eliminated Players" 1.0 0 -2674135 true "" "plot num-killed"
+"Voted Players" 1.0 0 -6917194 true "" "plot num-voted"
 
 @#$#@#$#@
 ## WHAT IS IT?
