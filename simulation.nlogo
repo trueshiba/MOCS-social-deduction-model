@@ -66,6 +66,14 @@ to setup
     set pcolor blue
   ]
 
+  set-current-plot "trust"
+  ask turtles [
+    let pen-name (word "turtle-" who)
+    create-temporary-plot-pen pen-name
+    set-plot-pen-color color
+    set-plot-pen-mode 0
+  ]
+
 
 end
 
@@ -77,25 +85,6 @@ to go
   if count crewmates <= 1 and count imposters >= 1 [ user-message "The imposter won!" stop]
 
   if not any? imposters [user-message "Crewmates won!" stop]
-
-  ; If time for voting / check ticks
-  if remainder ticks vote-freq = 0 and ticks != 0 [
-    ask turtles [
-      vote
-    ]
-
-    let sus max (list first-vote second-vote third-vote)
-    let suspicious sort-on [trust] turtles
-    (ifelse first-vote = sus [
-      ask item 0 suspicious [die]
-    ] second-vote = sus [
-      ask item 1 suspicious [die]
-    ] [
-      ask item 2 suspicious [die]
-    ])
-
-    set num-voted num-voted + 1
-  ]
 
   ask crewmates [
 
@@ -146,11 +135,28 @@ to go
   ; If other turtles are present in radius
     ; Deduct trust from their array index
   ]
-  tick
-  print("==================================")
+
+  ; If time for voting / check ticks
+  if remainder ticks vote-freq = 0 and ticks != 0 [
   ask turtles [
-    vote
+      vote
+    ]
+
+  let sus max (list first-vote second-vote third-vote)
+  let suspicious sort-on [trust] turtles
+  (ifelse first-vote = sus [
+    ask item 0 suspicious [set alive true die]
+  ] second-vote = sus [
+    ask item 1 suspicious [set alive true die]
+  ] [
+    ask item 2 suspicious [set alive true die]
+  ])
   ]
+
+  set num-voted num-voted + 1
+
+  update-trust-plot
+  tick
 end
 
 ; Function to move turtles
@@ -233,6 +239,17 @@ to vote
     [set second-vote second-vote + 1]
     [set third-vote third-vote + 1])
 end
+
+to update-trust-plot
+set-current-plot "trust"
+  ask turtles [
+    let pen-name (word "turtle-" who)
+    set-current-plot-pen pen-name
+    plot trust
+  ]
+end
+
+
 
 
 @#$#@#$#@
