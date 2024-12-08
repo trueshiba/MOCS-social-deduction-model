@@ -68,8 +68,7 @@ to setup
 
   set-current-plot "trust"
   ask turtles [
-    let pen-name (word "crewmate-" who)
-    if breed = "imposters" [ set pen-name (word "imposter-" who)]
+    let pen-name (word "turtle-" who)
     create-temporary-plot-pen pen-name
     set-plot-pen-color color
     set-plot-pen-mode 0
@@ -449,7 +448,7 @@ trust
 0.0
 1.0
 true
-true
+false
 "" ""
 PENS
 
