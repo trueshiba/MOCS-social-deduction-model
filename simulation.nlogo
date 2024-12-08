@@ -10,6 +10,7 @@ breed [ crewmates crewmate ]
 
 turtles-own [
   trust
+  alive
   trust-sphere
  ]
 
@@ -28,6 +29,7 @@ to setup
   create-crewmates initial-number-crewmates [
     set color blue
     set trust 1
+    set alive true
     setxy random-xcor random-ycor
   ]
 
@@ -40,6 +42,7 @@ to setup
     set time-since-prev-kill 0;
     ; set cooldown ; could be cool to have
     set vent-cooldown init-vent-cooldown
+    set alive true
     setxy random-xcor random-ycor
   ]
 
@@ -63,6 +66,14 @@ to setup
     set pcolor blue
   ]
 
+  set-current-plot "trust"
+  ask turtles [
+    let pen-name (word "turtle-" who)
+    create-temporary-plot-pen pen-name
+    set-plot-pen-color color
+    set-plot-pen-mode 0
+  ]
+
 
 end
 
@@ -74,23 +85,6 @@ to go
   if count crewmates <= 1 and count imposters >= 1 [ user-message "The imposter won!" stop]
 
   if not any? imposters [user-message "Crewmates won!" stop]
-
-  ; If time for voting / check ticks
-  if remainder ticks vote-freq = 0 and ticks != 0 [
-  ask turtles [
-      vote
-    ]
-
-  let sus max (list first-vote second-vote third-vote)
-  let suspicious sort-on [trust] turtles
-  (ifelse first-vote = sus [
-    ask item 0 suspicious [die]
-  ] second-vote = sus [
-    ask item 1 suspicious [die]
-  ] [
-    ask item 2 suspicious [die]
-  ])
-  ]
 
   ask crewmates [
 
@@ -141,11 +135,27 @@ to go
   ; If other turtles are present in radius
     ; Deduct trust from their array index
   ]
-  tick
-  print("==================================")
+
+  ; If time for voting / check ticks
+  if remainder ticks vote-freq = 0 and ticks != 0 [
   ask turtles [
-    vote
+      vote
+    ]
+
+  let sus max (list first-vote second-vote third-vote)
+  let suspicious sort-on [trust] turtles
+  (ifelse first-vote = sus [
+    ask item 0 suspicious [set alive true die]
+  ] second-vote = sus [
+    ask item 1 suspicious [set alive true die]
+  ] [
+    ask item 2 suspicious [set alive true die]
+  ])
   ]
+
+
+  update-trust-plot
+  tick
 end
 
 ; Function to move turtles
@@ -203,6 +213,7 @@ to kill
 
      let closest-crewmate min-one-of crewmates [distance myself]
      ask closest-crewmate [
+       set alive false ;
        die
        user-message "Imposter Killed"
       ]
@@ -227,6 +238,16 @@ to vote
     [set second-vote second-vote + 1]
     [set third-vote third-vote + 1])
 end
+
+to update-trust-plot
+set-current-plot "trust"
+  ask turtles [
+    let pen-name (word "turtle-" who)
+    set-current-plot-pen pen-name
+    plot trust
+  ]
+end
+
 
 
 
@@ -413,6 +434,23 @@ vote-freq
 1
 NIL
 HORIZONTAL
+
+PLOT
+453
+54
+653
+204
+trust
+time
+trust
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
 
 @#$#@#$#@
 ## WHAT IS IT?
