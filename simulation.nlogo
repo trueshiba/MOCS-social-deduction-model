@@ -5,7 +5,7 @@ globals [
   third-vote
   num-killed
   num-voted
-  
+
 ]
 
 breed [ imposters imposter ]
@@ -145,6 +145,7 @@ to go
 
   let sus max (list first-vote second-vote third-vote)
   let suspicious sort-on [trust] turtles
+  print suspicious
   (ifelse first-vote = sus [
     ask item 0 suspicious [die]
   ] second-vote = sus [
@@ -152,9 +153,30 @@ to go
   ] [
     ask item 2 suspicious [die]
   ])
+   set num-voted num-voted + 1
+
   ]
 
-  set num-voted num-voted + 1
+  ; Reset color of vents for venting
+  ask patch 7 7 [
+    set pcolor blue
+  ]
+
+  ask patch -7 -7 [
+    set pcolor blue
+  ]
+
+  ask patch -5 5 [
+    set pcolor blue
+  ]
+
+  ask patch 5 -5 [
+    set pcolor blue
+  ]
+
+  ask patch 0 0 [
+    set pcolor blue
+  ]
 
   update-trust-plot
   tick
@@ -179,7 +201,7 @@ to imposter-move
   ; get nearby turtles
   if any? other turtles in-radius trust-sphere [
     let suspicious sort-on [trust] other turtles in-radius trust-sphere
-    ; move away from untrusted agents
+    ; move towards least suspicious
     face last suspicious
   ]
   rt random 90 - random 90
@@ -195,7 +217,7 @@ end
 
 ; Function to see if imposter vents and to where
 to vent
-
+  ; Crashes if all patches covered with blood
   move-to max-one-of patches with [pcolor = blue] [distance myself]
   print ("Imposter vented")
 end
@@ -206,9 +228,15 @@ to kill
   if any? crewmates in-radius 2 [
     ; kill_prob = invnorm_dist * alpha * beta * time_since_prev_kill
     print ("Found crewmate")
-    let kill-prob (alpha * beta * time-since-prev-kill)
+
+
+    ; Equation to calc kill prob
+    let kill-prob (alpha * (1 - beta) * time-since-prev-kill)
+
+
+
     let random-chance (random-float 1)
-    print ( word kill-prob " > " random-chance )
+
     if kill-prob > (random-chance) [
      set time-since-prev-kill 0
      set pcolor green
@@ -231,7 +259,7 @@ end
 
 to vote
     let suspicious sort-on [trust] other turtles
-    print suspicious
+
     let vote-card random-float 1
     (ifelse
     vote-card >= 0.66
@@ -251,17 +279,15 @@ set-current-plot "trust"
   ]
 end
 
-
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-439
-240
+178
+21
+667
+511
 -1
 -1
-13.0
+28.3
 1
 10
 1
@@ -290,7 +316,7 @@ initial-number-crewmates
 initial-number-crewmates
 0
 25
-14.0
+25.0
 1
 1
 NIL
@@ -319,7 +345,7 @@ SLIDER
 init-alpha
 init-alpha
 0
-1
+2
 1.0
 0.1
 1
@@ -335,17 +361,17 @@ init-beta
 init-beta
 0
 1
-0.2
+0.5
 0.1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-13
-213
-76
-246
+234
+540
+321
+594
 NIL
 setup
 NIL
@@ -359,10 +385,10 @@ NIL
 1
 
 BUTTON
-120
-284
-183
-317
+499
+538
+583
+597
 NIL
 go
 NIL
@@ -376,10 +402,10 @@ NIL
 1
 
 BUTTON
-116
-238
-179
-271
+368
+539
+450
+595
 NIL
 go
 T
@@ -393,55 +419,55 @@ NIL
 1
 
 SLIDER
-8
-347
-180
-380
+0
+208
+172
+241
 vent-prob
 vent-prob
 0
 1
-0.1
+0.8
 0.1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-220
-262
-392
-295
+0
+310
+172
+343
 init-vent-cooldown
 init-vent-cooldown
 0
 100
-64.0
+25.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-17
-404
-189
-437
+0
+260
+172
+293
 vote-freq
 vote-freq
-25
-500
-25.0
-25
+0
+150
+10.0
+5
 1
 NIL
 HORIZONTAL
 
 PLOT
-688
-128
-1110
-460
+681
+21
+1103
+353
 Trust
 Time
 Trust
@@ -456,13 +482,13 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot mean [trust] of turtles"
 
 PLOT
-324
-372
-654
+684
+404
+1104
 699
 Number of Players over time
-# Players
 Time
+# Players
 0.0
 10.0
 0.0
